@@ -9,9 +9,10 @@ install_nginx() {
 # Funktion zur Installation von Certbot und Generierung des SSL-Zertifikats
 install_certbot() {
     local domain=$1
+    local email=$2
     echo "Installing certbot and generating SSL certificate for $domain..."
     apt-get update && apt-get install -y certbot python3-certbot-nginx
-    certbot -d "$domain" --non-interactive --agree-tos -m your-email@example.com --nginx
+    certbot -d "$domain" --non-interactive --agree-tos -m "$email" --nginx
 }
 
 # Funktion zur Erstellung der NGINX-Konfigurationsdatei
@@ -59,10 +60,11 @@ EOF
 # Hauptskript mit whiptail für Benutzereingaben
 main() {
     DOMAIN=$(whiptail --inputbox "Enter your domain name for PhotoPrism:" 8 78 photoprism.example.com --title "Domain Setup" 3>&1 1>&2 2>&3)
+    EMAIL=$(whiptail --inputbox "Enter your email address for SSL certificate registration:" 8 78 --title "Email Address" 3>&1 1>&2 2>&3)
     PHOTOPRISM_ADDRESS=$(whiptail --inputbox "Enter your PhotoPrism IP address or DNS name:" 8 78 docker.homenet:2342 --title "PhotoPrism Address" 3>&1 1>&2 2>&3)
 
     install_nginx
-    install_certbot "$DOMAIN"
+    install_certbot "$DOMAIN" "$EMAIL"
     setup_nginx_config "$DOMAIN" "$PHOTOPRISM_ADDRESS"
 
     echo "Setup completed. Access PhotoPrism at https://$DOMAIN"
