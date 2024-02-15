@@ -45,13 +45,13 @@ mainMenu(){
             if whiptail --title "$TITLE - Install nginx" --yesno "Do you want to install nginx" $SIZE; then
                 whiptail --title "$TITLE - Install nginx" --messagebox "Make shure you never had and have nginx installed" $SIZE
                 setup_nginx
-                install_ssl
                 if whiptail --title "$TITLE - UFW" --yesno "Do you want to allow Port $NEW_PORT (your new PhotoPrism Port) in UFW" $SIZE; then
                     sudo ufw allow $NEW_PORT/tcp
                     sudo ufw reload
                 else
                     whiptail --title "$TITLE - other firewalls" --msgbox "please allow the port $NEW_PORT/tcp in your other firewall" $SIZE
                 fi
+                install_ssl
                 echo "Let's Encrypt certificates are valid for 90 days, but Certbot can automatically renew them."
                 sudo certbot renew --dry-run
             else
