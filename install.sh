@@ -30,7 +30,7 @@ PhotoPrism_Port=2342
 
 
 mainMenu(){
-    OPTIONS=("install" "Starts the installer" "update" "Update PhotoPrism" "Help" "view helpful Informations" "About" "" "Quit" "Quit the installer aka close it!")
+    OPTIONS=("install" "Starts the installer" "install ssl" "Install ssl zertifikat on your server using certbot an nginx" "update" "Update PhotoPrism" "Help" "view helpful Informations" "About" "" "Quit" "Quit the installer aka close it!")
 
     CHOICE=$(whiptail --title "$TITLE" --menu "" $DIMS "${OPTIONS[@]}" 3>&1 1>&2 2>&3)
 
@@ -40,6 +40,15 @@ mainMenu(){
             firewall
             echo "Successfully installed on your system"
             echo "You can now open your browser and go to http://localhost:$PhotoPrism_Port"
+            ;;
+        "install ssl")
+            if whiptail --title "$TITLE - Install nginx" --yesno "Do you want to install nginx" $SIZE; then
+                whiptail --title "$TITLE - Install nginx" --messagebox "Make shure you never had and have nginx installed" $SIZE
+                setup_nginx
+                install_ssl
+            else
+                mainMenu
+            fi
             ;;
         update)
             update
@@ -57,6 +66,36 @@ mainMenu(){
             quit
             ;;
     esac
+}
+
+install_ssl(){
+    echo "Starting the install process"
+    sudo apt install certbot python3-certbot-nginx -y
+    DOMAIN=$(whiptail --inputbox "What domain should be used?" --title "$TITLE - Domain" $SIZE 3>&1 1>&2 2>&3)
+    sudo certbot --nginx -d $DOMAIN
+}
+
+setup_nginx(){
+    NGINX_CONFIG="/etc/nginx/sites-available/photoprism"
+    sudo apt install nginx -y
+    echo "Configuring Nginx for PhotoPrism..."
+    sudo cat > $NGINX_CONFIG << EOF
+server {
+    listen $PhotoPrism_Port;
+    server_name $DOMAIN_NAME ssl;
+
+    location / {
+        proxy_pass http://localhost:$PhotoPrism_Port; # Ensure this matches PhotoPrism's port
+        proxy_set_header Host \$host;
+        proxy_set_header X-Real-IP \$remote_addr;
+        proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto \$scheme;
+    }
+}
+EOF
+    sudo ln -s $NGINX_CONFIG /etc/nginx/sites-enabled/
+    sudo nginx -t && sudo systemctl restart nginx
+    sudo systemctl enable nginx
 }
 
 install(){
