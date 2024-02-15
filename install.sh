@@ -286,7 +286,7 @@ firewall(){
             CHOICE=$(whiptail --title "$TITLE - Firewall" --menu "Firewalls are essential for server security. There are various ways to configure the firewall." $DIMS "${OPTIONS[@]}" 3>&1 1>&2 2>&3)
 
             case $CHOICE in
-                new install)
+                "new install")
                     sudo apt install -y ufw
                     SSH_PORT=$(whiptail --title "$TITLE - SSH port" --inputbox "What is your SSH port" $DIMS 3>&1 1>&2 2>&3)
                     sudo ufw allow $SSH_PORT/tcp
@@ -294,7 +294,7 @@ firewall(){
                     sudo ufw default deny incoming
                     sudo ufw default allow outgoing
                     ;;
-                already installed)
+                "already installed")
                     if whiptail --title "$TITLE - Firewall" --yesno "Have you already allowed the SSH port?" $DIMS; then
                         echo "UFW was already installed with SSH port $SSH_PORT/tcp"
                     else
