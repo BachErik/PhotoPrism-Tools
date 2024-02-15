@@ -353,8 +353,8 @@ firewall(){
                     SSH_PORT=$(whiptail --inputbox "What is your SSH port" --title "$TITLE - SSH port" $SIZE 3>&1 1>&2 2>&3)
                     sudo ufw allow $SSH_PORT/tcp
                     echo "UFW was installed with SSH port $SSH_PORT/tcp"
-                    sudo ufw default deny incoming
-                    sudo ufw default allow outgoing
+                    # sudo ufw default deny incoming
+                    # sudo ufw default allow outgoing
                     ;;
                 "already installed")
                     echo "UFW already installed was selected"
