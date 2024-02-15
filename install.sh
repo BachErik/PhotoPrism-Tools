@@ -116,7 +116,9 @@ install(){
 
     wget https://dl.photoprism.app/pkg/linux/amd64.tar.gz
     sudo mkdir /opt/photoprism
+    echo "Extracting PhotoPrism..."
     sudo tar xzf amd64.tar.gz -C /opt/photoprism/
+    echo "Please wait patiently..."
     rm amd64.tar.gz
 
     PHOTOPRISM_VERSION=$(/opt/photoprism/bin/photoprism -v)
