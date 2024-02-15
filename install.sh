@@ -37,6 +37,7 @@ mainMenu(){
         install)
             install
             firewall
+            echo "Successfully installed on your system"
             ;;
         update)
             update
