@@ -48,7 +48,6 @@ server {
     listen 443 ssl http2;
     listen [::]:443 ssl http2;
     server_name $domain;
-    client_max_body_size 20GB;
     
 
     ssl_certificate /etc/letsencrypt/live/$domain/fullchain.pem;
