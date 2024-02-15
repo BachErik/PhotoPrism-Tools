@@ -26,7 +26,7 @@ MariaDB_USER="photoprism"
 MariaDB_PASSWORD="photoprism"
 
 # Ports
-PORTS_TO_ALLOW=(  )
+PhotoPrism_Port=2342
 
 
 mainMenu(){
@@ -138,7 +138,7 @@ install(){
     sudo echo "PHOTOPRISM_ORIGINALS_PATH="/var/lib/photoprism/photos/Originals"" >> .env
     sudo echo "PHOTOPRISM_IMPORT_PATH="/var/lib/photoprism/photos/Import"" >> .env
     sudo echo "" >> .env
-    if MariaDB; then
+    if MariaDB == true; then
         sudo echo "# Uncomment below if using MariaDB/MySQL instead of SQLite (the default)" >> .env
         sudo echo "PHOTOPRISM_DATABASE_DRIVER="mysql"" >> .env
         sudo echo "PHOTOPRISM_DATABASE_SERVER="localhost:$MariaDB_PORT"" >> .env
@@ -310,17 +310,14 @@ firewall(){
                     ;;
             esac
 
-            for port in "${PORTS_TO_ALLOW[@]}"; do
-                sudo ufw allow "$port/tcp"
-                echo "Port $port/tcp wurde für UFW freigegeben"
-            done
+            sudo ufw allow $MariaDB_PORT/tcp
+            sudo ufw allow $PhotoPrism_Port/tcp
 
             sudo ufw enable
             ;;
         "other firewall")
             # Show all Ports that have to be opened
-            local ports=$(IFS=, ; echo "${PORTS_TO_ALLOW[*]}")
-            whiptail --title "$TITLE - Manual Firewall Configuration" --msgbox "Please ensure the following ports are open on your firewall to ensure proper operation:\n\nTCP Ports: $ports\n\nThis may involve editing your firewall configuration files or using a firewall management tool. Refer to your firewall's documentation for instructions on opening ports." $SIZE
+            whiptail --title "$TITLE - Manual Firewall Configuration" --msgbox "Please ensure the following ports are open on your firewall to ensure proper operation:\n\nTCP Ports: $MARIA_DB_PORT, $PhotoPrism_Port both tcp\n\nThis may involve editing your firewall configuration files or using a firewall management tool. Refer to your firewall's documentation for instructions on opening ports." $SIZE
             ;;
         *)
             quit
