@@ -127,7 +127,7 @@ install(){
     sudo chown -R photoprism:photoprism /var/lib/photoprism /opt/photoprism
     cd /var/lib/photoprism
 
-    PHOTOPRISM_ADMIN_PASSWORD=$(whiptail --passwordbox "Enter the admin password for PhotoPrism" --title "$TITLE - Admin Password for PhotoPrism" $SIZE)
+    PHOTOPRISM_ADMIN_PASSWORD=$(whiptail --passwordbox "Enter the admin password for PhotoPrism" --title "$TITLE - Admin Password for PhotoPrism" $SIZE 3>&1 1>&2 2>&3)
 
     sudo echo "# Initial password for the admin user" > .env
     sudo echo "PHOTOPRISM_AUTH_MODE="password"" >> .env
