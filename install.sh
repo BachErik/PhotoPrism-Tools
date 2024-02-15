@@ -42,21 +42,7 @@ mainMenu(){
             echo "You can now open your browser and go to http://localhost:$PhotoPrism_Port"
             ;;
         "install ssl")
-            if whiptail --title "$TITLE - Install nginx" --yesno "Do you want to install nginx" $SIZE; then
-                whiptail --title "$TITLE - Install nginx" --messagebox "Make shure you never had and have nginx installed" $SIZE
-                setup_nginx
-                if whiptail --title "$TITLE - UFW" --yesno "Do you want to allow Port $NEW_PORT (your new PhotoPrism Port) in UFW" $SIZE; then
-                    sudo ufw allow $NEW_PORT/tcp
-                    sudo ufw reload
-                else
-                    whiptail --title "$TITLE - other firewalls" --msgbox "please allow the port $NEW_PORT/tcp in your other firewall" $SIZE
-                fi
-                install_ssl
-                echo "Let's Encrypt certificates are valid for 90 days, but Certbot can automatically renew them."
-                sudo certbot renew --dry-run
-            else
-                mainMenu
-            fi
+            ssl
             ;;
         update)
             update
@@ -76,36 +62,14 @@ mainMenu(){
     esac
 }
 
-install_ssl(){
-    echo "Starting the install process"
-    sudo apt install certbot python3-certbot-nginx -y
-    DOMAIN=$(whiptail --inputbox "What domain should be used?" --title "$TITLE - Domain" $SIZE 3>&1 1>&2 2>&3)
-    sudo certbot --nginx -d $DOMAIN
-}
-
-setup_nginx(){
-    NGINX_CONFIG="/etc/nginx/sites-available/photoprism"
-    sudo apt install nginx -y
-    echo "Configuring Nginx for PhotoPrism..."
-    NEW_PORT=$(whiptail --inputbox "What should be the port for your Nginx" --title "$TITLE - Port for Nginx" $SIZE 3>&1 1>&2 2>&3)
-    sudo cat > $NGINX_CONFIG << EOF
-server {
-    listen $NEW_PORT;
-    server_name $DOMAIN_NAME ssl;
-
-    location / {
-        proxy_pass http://localhost:$PhotoPrism_Port; # Ensure this matches PhotoPrism's port
-        proxy_set_header Host localhost;
-        proxy_set_header X-Real-IP \$remote_addr;
-        proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
-        proxy_set_header REMOTE-HOST \$remote_addr;
-        expires -1;
-    }
-}
-EOF
-    sudo ln -s $NGINX_CONFIG /etc/nginx/sites-enabled/
-    sudo nginx -t && sudo systemctl restart nginx
-    sudo systemctl enable nginx
+ssl(){
+    
+    if [ -f "ssl.sh" ]; then
+    else
+        wget "https://raw.githubusercontent.com/BachErik/PhotoPrism-Tools/main/ssl.sh"
+        chmod 777 ssl.sh
+    fi
+    ./ssl.sh
 }
 
 install(){
