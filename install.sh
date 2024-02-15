@@ -46,6 +46,14 @@ mainMenu(){
                 whiptail --title "$TITLE - Install nginx" --messagebox "Make shure you never had and have nginx installed" $SIZE
                 setup_nginx
                 install_ssl
+                if whiptail --title "$TITLE - UFW" --yesno "Do you want to allow Port $NEW_PORT (your new PhotoPrism Port) in UFW" $SIZE; then
+                    sudo ufw allow $NEW_PORT/tcp
+                    sudo ufw reload
+                else
+                    whiptail --title "$TITLE - other firewalls" --msgbox "please allow the port $NEW_PORT/tcp in your other firewall" $SIZE
+                fi
+                echo "Let's Encrypt certificates are valid for 90 days, but Certbot can automatically renew them."
+                sudo certbot renew --dry-run
             else
                 mainMenu
             fi
@@ -79,9 +87,10 @@ setup_nginx(){
     NGINX_CONFIG="/etc/nginx/sites-available/photoprism"
     sudo apt install nginx -y
     echo "Configuring Nginx for PhotoPrism..."
+    NEW_PORT=$(whiptail --inputbox "What should be the port for your Nginx" --title "$TITLE - Port for Nginx" $SIZE 3>&1 1>&2 2>&3)
     sudo cat > $NGINX_CONFIG << EOF
 server {
-    listen $PhotoPrism_Port;
+    listen $NEW_PORT;
     server_name $DOMAIN_NAME ssl;
 
     location / {
