@@ -145,7 +145,7 @@ install(){
     sudo echo "PHOTOPRISM_ORIGINALS_PATH="/var/lib/photoprism/photos/Originals"" >> .env
     sudo echo "PHOTOPRISM_IMPORT_PATH="/var/lib/photoprism/photos/Import"" >> .env
     sudo echo "" >> .env
-    if MariaDB == true; then
+    if $MariaDB; then
         sudo echo "# Uncomment below if using MariaDB/MySQL instead of SQLite (the default)" >> .env
         sudo echo "PHOTOPRISM_DATABASE_DRIVER="mysql"" >> .env
         sudo echo "PHOTOPRISM_DATABASE_SERVER="localhost:$MariaDB_PORT"" >> .env
