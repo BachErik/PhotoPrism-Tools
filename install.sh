@@ -315,7 +315,7 @@ firewall(){
 
             sudo ufw enable
             ;;
-        other firewall)
+        "other firewall")
             # Show all Ports that have to be opened
             local ports=$(IFS=, ; echo "${PORTS_TO_ALLOW[*]}")
             whiptail --title "$TITLE - Manual Firewall Configuration" --msgbox "Please ensure the following ports are open on your firewall to ensure proper operation:\n\nTCP Ports: $ports\n\nThis may involve editing your firewall configuration files or using a firewall management tool. Refer to your firewall's documentation for instructions on opening ports." $DIMS
