@@ -15,6 +15,7 @@ LINES=$(tput lines)
 COLUMNS=$(tput cols)
 MENU_HEIGHT=$((LINES - 8))
 DIMS="$LINES $COLUMNS $MENU_HEIGHT"
+SIZE="$LINES $COLUMNS"
 
 TITLE="PhotoPrism installer by BachErik"
 MariaDB=false
@@ -119,14 +120,14 @@ install(){
     rm amd64.tar.gz
 
     PHOTOPRISM_VERSION=$(/opt/photoprism/bin/photoprism -v)
-    whiptail --title "$TITLE - Success" --msgbox "PhotoPrism version: $PHOTOPRISM_VERSION" $DIMS
+    whiptail --title "$TITLE - Success" --msgbox "PhotoPrism version: $PHOTOPRISM_VERSION" $ZIZE
 
     sudo useradd --system photoprism
     sudo mkdir /var/lib/photoprism
     sudo chown -R photoprism:photoprism /var/lib/photoprism /opt/photoprism
     cd /var/lib/photoprism
 
-    PHOTOPRISM_ADMIN_PASSWORD=$(whiptail $DIMS --passwordbox "Enter the admin password for PhotoPrism")
+    PHOTOPRISM_ADMIN_PASSWORD=$(whiptail --passwordbox "Enter the admin password for PhotoPrism" --title "$TITLE - Admin Password for PhotoPrism" $ZIZE)
 
     sudo echo "# Initial password for the admin user" > .env
     sudo echo "PHOTOPRISM_AUTH_MODE="password"" >> .env
@@ -156,10 +157,10 @@ install(){
     sudo chown photoprism:photoprism .env
     sudo chmod 640 .env
 
-    whiptail --title "$TITLE - Success" --msgbox "PhotoPrism was installed successfully" $DIMS
-    whiptail --title "$TITLE - .env" --msgbox "Edit /var/lib/photoprism/.env if you want to change the settings, you can find the documentation here: https://docs.photoprism.app/getting-started/config-options/" $DIMS
+    whiptail --title "$TITLE - Success" --msgbox "PhotoPrism was installed successfully" $ZIZE
+    whiptail --title "$TITLE - .env" --msgbox "Edit /var/lib/photoprism/.env if you want to change the settings, you can find the documentation here: https://docs.photoprism.app/getting-started/config-options/" $ZIZE
 
-    if whiptail --title "$TITLE - Enable systemctl" --yesno "Do you want to enable the service?" $DIMS; then
+    if whiptail --title "$TITLE - Enable systemctl" --yesno "Do you want to enable the service?" $ZIZE; then
         sudo echo "Enabling service..."
         sudo echo "[Unit]" > /etc/systemd/system/photoprism.service
         sudo echo "Description=PhotoPrism service" >> /etc/systemd/system/photoprism.service
@@ -234,9 +235,9 @@ mariaDB(){
     sudo apt install -y mariadb-server
     mariadb-secure-installation
 
-    USERNAME=$(whiptail --inputbox "What should be the username for your MariaDB" --title "$TITLE - Username for MariaDB" $DIMS 3>&1 1>&2 2>&3)
-    PASSWORD=$(whiptail --passwordbox "What should be the password for your MariaDB" --title "$TITLE - Password for MariaDB" $DIMS 3>&1 1>&2 2>&3)
-    DATABASE_NAME=$(whiptail --inputbox "What should be the database name for your MariaDB" --title "$TITLE - Database name for MariaDB" $DIMS 3>&1 1>&2 2>&3)
+    USERNAME=$(whiptail --inputbox "What should be the username for your MariaDB" --title "$TITLE - Username for MariaDB" $ZIZE 3>&1 1>&2 2>&3)
+    PASSWORD=$(whiptail --passwordbox "What should be the password for your MariaDB" --title "$TITLE - Password for MariaDB" $ZIZE 3>&1 1>&2 2>&3)
+    DATABASE_NAME=$(whiptail --inputbox "What should be the database name for your MariaDB" --title "$TITLE - Database name for MariaDB" $ZIZE 3>&1 1>&2 2>&3)
 
     echo "Creating database..."
     sudo mysql -u root -e "CREATE DATABASE $DATABASE_NAME;"
@@ -249,21 +250,21 @@ mariaDB(){
     MariaDB_PASSWORD=$PASSWORD
     MariaDB=true
 
-    if whiptail --title "$TITLE - enable remote access for MariaDB" --yesno "Would you like to set up remote access to your MariaDB?" $DIMS; then
+    if whiptail --title "$TITLE - enable remote access for MariaDB" --yesno "Would you like to set up remote access to your MariaDB?" $ZIZE; then
         echo "Enabling remote access for MariaDB..."
         if [ ! -f "$CONFIG_FILE" ]; then
-            MariaDB_CONFIG_FILE=$(whiptail --inputbox "Where is your MariaDB config file?" --title "$TITLE - MariaDB config file" $DIMS 3>&1 1>&2 2>&3)
+            MariaDB_CONFIG_FILE=$(whiptail --inputbox "Where is your MariaDB config file?" --title "$TITLE - MariaDB config file" $ZIZE 3>&1 1>&2 2>&3)
         fi
         cp $CONFIG_FILE "$CONFIG_FILE.bak"
 
-        PORT=$(whiptail --inputbox "What should be the port for your MariaDB" --title "$TITLE - Port for MariaDB" $DIMS 3>&1 1>&2 2>&3)
+        PORT=$(whiptail --inputbox "What should be the port for your MariaDB" --title "$TITLE - Port for MariaDB" $ZIZE 3>&1 1>&2 2>&3)
         sed -i "/^port\s*=/c\port = $PORT" $CONFIG_FILE
         sed -i 's/^bind-address\s*= 127.0.0.1/bind-address = 0.0.0.0/' $MariaDB_CONFIG_FILE
         PORTS_TO_ALLOW+=($PORT)  # Add the MariaDB port to the list
         MariaDB_PORT=$PORT
 
         if ! grep -q "^port = $NEW_PORT" $CONFIG_FILE; then
-            whiptail --title "$TITLE - Error" --msgbox "Port could not be changed in the configuration file. Check the file manually."
+            whiptail --title "$TITLE - Error" --msgbox "Port could not be changed in the configuration file. Check the file manually." $ZIZE
         fi
     fi
     sudo systemctl restart mariadb
@@ -279,7 +280,7 @@ firewall(){
     case $CHOICE in
         UFW)
             
-            whiptail --title "$TITLE - disable all other Firewalls used" --msgbox "Make sure that you do not have another firewall running or that it will activate automatically." $DIMS
+            whiptail --title "$TITLE - disable all other Firewalls used" --msgbox "Make sure that you do not have another firewall running or that it will activate automatically." $ZIZE
             
 
             OPTIONS=("new install" "Only the UFW firewall can be configured and installed automatically by the script." "already installed" "You already have UFW installed and possibly already configured, no problem just select this option")
@@ -289,17 +290,17 @@ firewall(){
             case $CHOICE in
                 "new install")
                     sudo apt install -y ufw
-                    SSH_PORT=$(whiptail --inputbox "What is your SSH port" --title "$TITLE - SSH port" $DIMS 3>&1 1>&2 2>&3)
+                    SSH_PORT=$(whiptail --inputbox "What is your SSH port" --title "$TITLE - SSH port" $ZIZE 3>&1 1>&2 2>&3)
                     sudo ufw allow $SSH_PORT/tcp
                     echo "UFW was installed with SSH port $SSH_PORT/tcp"
                     sudo ufw default deny incoming
                     sudo ufw default allow outgoing
                     ;;
                 "already installed")
-                    if whiptail --yesno "Have you already allowed the SSH port?" --title "$TITLE - Firewall" $DIMS; then
+                    if whiptail --yesno "Have you already allowed the SSH port?" --title "$TITLE - Firewall" $ZIZE; then
                         echo "UFW was already installed with SSH port $SSH_PORT/tcp"
                     else
-                        SSH_PORT=$(whiptail --inputbox "What is your SSH port" --title "$TITLE - SSH port" $DIMS 3>&1 1>&2 2>&3)
+                        SSH_PORT=$(whiptail --inputbox "What is your SSH port" --title "$TITLE - SSH port" $ZIZE 3>&1 1>&2 2>&3)
                         sudo ufw allow $SSH_PORT/tcp
                         echo "UFW was installed with SSH port $SSH_PORT/tcp"
                     fi
@@ -319,7 +320,7 @@ firewall(){
         "other firewall")
             # Show all Ports that have to be opened
             local ports=$(IFS=, ; echo "${PORTS_TO_ALLOW[*]}")
-            whiptail --title "$TITLE - Manual Firewall Configuration" --msgbox "Please ensure the following ports are open on your firewall to ensure proper operation:\n\nTCP Ports: $ports\n\nThis may involve editing your firewall configuration files or using a firewall management tool. Refer to your firewall's documentation for instructions on opening ports." $DIMS
+            whiptail --title "$TITLE - Manual Firewall Configuration" --msgbox "Please ensure the following ports are open on your firewall to ensure proper operation:\n\nTCP Ports: $ports\n\nThis may involve editing your firewall configuration files or using a firewall management tool. Refer to your firewall's documentation for instructions on opening ports." $ZIZE
             ;;
         *)
             quit
@@ -340,18 +341,18 @@ update(){
 }
 
 help(){
-    whiptail --title "$TITLE - Help" --msgbox "Not implemented yet." $DIMS
+    whiptail --title "$TITLE - Help" --msgbox "Not implemented yet." $ZIZE
     mainMenu
 }
 
 about(){
-    whiptail --title "$TITLE - About" --msgbox "I wrote this little installer script for PhotoPrism because I was bored and because I want to install PhotoPrism but am too lazy to do everything myself. Now I have a script that does everything for me. It wasn't any better to make a script for it than to install it by hand, but now I did it." $DIMS
+    whiptail --title "$TITLE - About" --msgbox "I wrote this little installer script for PhotoPrism because I was bored and because I want to install PhotoPrism but am too lazy to do everything myself. Now I have a script that does everything for me. It wasn't any better to make a script for it than to install it by hand, but now I did it." $ZIZE
     mainMenu
 }
 
 quit(){
     # If you cannot understand this, read Bash_Shell_Scripting/Conditional_Expressions again.
-    if whiptail --title "$TITLE - Quit" --yesno "You shure you want to quit" $DIMS; then
+    if whiptail --title "$TITLE - Quit" --yesno "You shure you want to quit" $ZIZE; then
         echo "User selected Yes, exit status was $?."
     else
         echo "User selected No, exit status was $?."
