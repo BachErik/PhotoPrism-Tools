@@ -65,6 +65,7 @@ mainMenu(){
 ssl(){
     
     if [ -f "ssl.sh" ]; then
+        echo "ssl.sh already exists"
     else
         wget "https://raw.githubusercontent.com/BachErik/PhotoPrism-Tools/main/ssl.sh"
         chmod 777 ssl.sh
