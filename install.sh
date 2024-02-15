@@ -39,6 +39,7 @@ mainMenu(){
             install
             firewall
             echo "Successfully installed on your system"
+            echo "You can now open your browser and go to http://localhost:$PhotoPrism_Port"
             ;;
         update)
             update
@@ -124,10 +125,14 @@ install(){
     PHOTOPRISM_VERSION=$(/opt/photoprism/bin/photoprism -v)
     whiptail --title "$TITLE - Success" --msgbox "PhotoPrism version: $PHOTOPRISM_VERSION" $SIZE
 
+    echo "Creating user..."
     sudo useradd --system photoprism
     sudo mkdir /var/lib/photoprism
     sudo chown -R photoprism:photoprism /var/lib/photoprism /opt/photoprism
     cd /var/lib/photoprism
+
+    
+    echo "Creating .env..."
 
     PHOTOPRISM_ADMIN_PASSWORD=$(whiptail --passwordbox "Enter the admin password for PhotoPrism" --title "$TITLE - Admin Password for PhotoPrism" $SIZE 3>&1 1>&2 2>&3)
 
@@ -234,6 +239,7 @@ install(){
 }
 
 mariaDB(){
+    echo "Starting the MariaDB installation"
     sudo apt install -y mariadb-server
     mariadb-secure-installation
 
@@ -271,17 +277,19 @@ mariaDB(){
     fi
     sudo systemctl restart mariadb
     sudo systemctl enable mariadb
+    echo "MariaDB was installed successfully"
 }
 
 
 firewall(){
+    echo "Starting the firewall installation"
     OPTIONS=("UFW" "Only the UFW firewall can be configured and installed automatically by the script." "other firewall" "If you want to use a different firewall.")
 
     CHOICE=$(whiptail --title "$TITLE - Firewall" --menu "Firewalls are essential for server security. There are various ways to configure the firewall." $DIMS "${OPTIONS[@]}" 3>&1 1>&2 2>&3)
 
     case $CHOICE in
         UFW)
-            
+            echo "UFW was selected"
             whiptail --title "$TITLE - disable all other Firewalls used" --msgbox "Make sure that you do not have another firewall running or that it will activate automatically." $SIZE
             
 
@@ -291,6 +299,7 @@ firewall(){
 
             case $CHOICE in
                 "new install")
+                    echo "new UFW installation was selected"
                     sudo apt install -y ufw
                     SSH_PORT=$(whiptail --inputbox "What is your SSH port" --title "$TITLE - SSH port" $SIZE 3>&1 1>&2 2>&3)
                     sudo ufw allow $SSH_PORT/tcp
@@ -299,6 +308,7 @@ firewall(){
                     sudo ufw default allow outgoing
                     ;;
                 "already installed")
+                    echo "UFW already installed was selected"
                     if whiptail --yesno "Have you already allowed the SSH port?" --title "$TITLE - Firewall" $SIZE; then
                         echo "UFW was already installed with SSH port $SSH_PORT/tcp"
                     else
@@ -312,6 +322,7 @@ firewall(){
                     ;;
             esac
 
+            echo "UFW was installed"
             sudo ufw allow $MariaDB_PORT/tcp
             sudo ufw allow $PhotoPrism_Port/tcp
 
@@ -328,6 +339,7 @@ firewall(){
 }
 
 update(){
+    echo "Starting the update"
     sudo systemctl stop photoprism
     sudo cp /opt/photoprism/ /opt/photoprism.bak/
     sudo rm -rf /opt/photoprism/*
@@ -336,7 +348,7 @@ update(){
     sudo chown -R photoprism:photoprism /opt/photoprism
     rm amd64.tar.gz
     sudo systemctl start photoprism
-    echo successfully updated
+    echo "successfully updated"
 }
 
 help(){
