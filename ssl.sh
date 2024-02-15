@@ -15,6 +15,19 @@ install_certbot() {
     certbot -d "$domain" --non-interactive --agree-tos -m "$email" --nginx
 }
 
+# Funktion zur Freigabe der Ports mit ufw
+configure_ufw() {
+    echo "Configuring UFW to allow necessary ports..."
+    ufw allow 80/tcp
+    ufw allow 443/tcp
+    echo "Ports 80 (HTTP) and 443 (HTTPS) have been allowed through UFW."
+}
+
+# Funktion zur Anzeige der benötigten Ports, falls eine andere Firewall verwendet wird
+display_ports_info() {
+    whiptail --title "Required Ports" --msgbox "Please ensure the following ports are allowed through your firewall:\n\nHTTP: 80\nHTTPS: 443" 12 78
+}
+
 # Funktion zur Erstellung der NGINX-Konfigurationsdatei
 setup_nginx_config() {
     local domain=$1
@@ -62,6 +75,12 @@ main() {
     DOMAIN=$(whiptail --inputbox "Enter your domain name for PhotoPrism:" 8 78 photoprism.example.com --title "Domain Setup" 3>&1 1>&2 2>&3)
     EMAIL=$(whiptail --inputbox "Enter your email address for SSL certificate registration:" 8 78 --title "Email Address" 3>&1 1>&2 2>&3)
     PHOTOPRISM_ADDRESS=$(whiptail --inputbox "Enter your PhotoPrism IP address or DNS name:" 8 78 docker.homenet:2342 --title "PhotoPrism Address" 3>&1 1>&2 2>&3)
+
+    if (whiptail --title "Firewall Configuration" --yesno "Do you want to configure UFW to allow necessary ports automatically?" 8 78); then
+        configure_ufw
+    else
+        display_ports_info
+    fi
 
     install_nginx
     install_certbot "$DOMAIN" "$EMAIL"
