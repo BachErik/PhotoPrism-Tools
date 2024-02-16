@@ -57,7 +57,7 @@ server {
     ssl_ciphers HIGH:!RC4:!aNULL:!eNULL:!LOW:!3DES:!MD5:!EXP:!PSK:!SRP:!DSS;
     add_header Strict-Transport-Security "max-age=172800; includeSubdomains";
 
-    client_max_body_size 20GB;
+    client_max_body_size 20G;
 
     location / {
         proxy_pass http://$photoprism_address;
